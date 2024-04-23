@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="script.js" defer></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
 </head>
 <body>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -15,6 +17,19 @@
             <span id="score">Pontos: 000</span>
         </div>
         <div class="play-board"></div>
+    </div>
+    <div id="modalFala" class="modalFala">
+        <div class="modalInterno">
+            <h2 style="font-size:5vw;">Fale:</h2>
+            <h1 style="font-size: 10vw;" id="palavra"></h1>
+            <button id="listenBtn">Clique para ouvir novamente</button>
+            <h3>Vidas Restantes</h3>
+            <div id="lives">
+                <i class="material-icons" id="L1" style="font-size:75px;color:rgb(0, 184, 0);">favorite</i>
+                <i class="material-icons" id="L2" style="font-size:75px;color:rgb(0, 184, 0);">favorite</i>
+                <i class="material-icons" id="L3" style="font-size:75px;color:rgb(0, 184, 0);">favorite</i>
+            </div>
+        </div>
     </div>
 </body>
 </html>

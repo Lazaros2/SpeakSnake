@@ -7,6 +7,7 @@ $(document).ready(function(){
     var fale = $("#pronuncie");
     var pontuacao = $("#score");
     var textbox = $("#textbox");
+    var listenBtn =$("#listenBtn");
     var content = '';
     var alimentacaoFacil = ["arroz", "aveia", "banana", "carne", "chá", "couve", "leite", "maçã", "mel", "milho", "ovo", "pão", "peixe", "sal", "tomate"];
 
@@ -34,6 +35,7 @@ $(document).ready(function(){
     let velX = 0, velY = 0;
     let snakeBody = [];
     let gamePaused = false;
+    let gameInterval = null;
 
     msg.onend = function(e) {
         if (isRecognitionActive) {
@@ -61,9 +63,13 @@ $(document).ready(function(){
     ordenaPalavras(alimentacaoFacil); // ordenação automática
 
     function falaPalavra(){
-        console.log("Fale: " + filaPalavras[0].palavra)
-        fale.text("Fale: " + filaPalavras[0].palavra); // mostra a palavra a ser falada
-        msg.text = "Fale " + filaPalavras[0].palavra; // adicione o texto que vai ser falado
+        togglePause();
+        var palavra=filaPalavras[0].palavra;
+        updateLives(); //atualiza os corações
+        console.log("Fale: " + palavra)
+
+        document.getElementById("palavra").textContent=palavra.toUpperCase(); // mostra a palavra a ser falada
+        msg.text = "Fale " + palavra; // adicione o texto que vai ser falado
         speechSynthesis.speak(msg); // fala o texto
     }
 
@@ -77,6 +83,14 @@ $(document).ready(function(){
         console.log("Fim do reconhecimento");
         isRecognitionActive=false;
     }
+
+    recognition.onerror = function(event) {
+        console.log("Error: " + event.error);
+        if (event.message) {
+            console.log("Error Details: " + event.message);
+        }
+        isRecognitionActive = false;
+    };
 
     recognition.onresult = function(event) {
         console.log("Processando resultados...");
@@ -124,7 +138,8 @@ $(document).ready(function(){
         pontuacao.text("Pontos: "+pontos);   // atualiza os pontos
         filaPalavras.splice(0,1); // remover a palavra da lista
         console.log(filaPalavras); // lista atualizada
-        textbox.val(" ");
+        gamePaused=false;
+        togglePause();
         // falaPalavra();
         // nova lista mostrada como sucesso
     }
@@ -132,6 +147,7 @@ $(document).ready(function(){
     function pronunciaErrada(){
         if(filaPalavras[0].vidas>0){
             filaPalavras[0].vidas--;
+            updateLives();
             console.log("Tente novamente! Você tem "+filaPalavras[0].vidas+" Tentativas restantes");
             // falaPalavra();
         }else{
@@ -139,17 +155,39 @@ $(document).ready(function(){
             // move o primeiro elemento para a última posição
             filaPalavras.push(filaPalavras.shift());
             console.log(filaPalavras); // lista atualizada
-
+            gamePaused=false;
+            togglePause();
             // falaPalavra();
         }
     }
-
+   function updateLives() {
+     switch (filaPalavras[0].vidas) {
+        case 3:
+            document.getElementById("L1").style = "font-size:75px;color:rgb(0, 184, 0);";
+            document.getElementById("L2").style = "font-size:75px;color:rgb(0, 184, 0);";
+            document.getElementById("L3").style = "font-size:75px;color:rgb(0, 184, 0);";
+            break;
+        case 2:
+            document.getElementById("L1").style = "font-size:75px;color:rgb(255, 230, 1);";
+            document.getElementById("L2").style = "font-size:75px;color:rgb(255, 230, 1);";
+            document.getElementById("L3").style = "font-size:75px;color:rgb(255, 255, 255);";
+            break;
+        case 1:
+            document.getElementById("L1").style = "font-size:75px;color:rgb(255, 0, 0);";
+            document.getElementById("L2").style = "font-size:75px;color:rgb(255, 255, 255);";
+            document.getElementById("L3").style = "font-size:75px;color:rgb(255, 255, 255);";
+                break;  
+     
+        default:
+            break;
+     }
+   }
     $("#start-btn").click(function(event) {
         event.preventDefault(); // evita o reload
         falaPalavra();
     });
 
-    $("#synt-btn").click(function(event){
+    $("#listenBtn").click(function(event){
         event.preventDefault();
         recognition.stop(); // interrompe o reconhecimento
         console.log("Botão de reprodução foi clicado");
@@ -158,13 +196,7 @@ $(document).ready(function(){
 
     }); 
 
-    recognition.onerror = function(event) {
-        console.log("Error: " + event.error);
-        if (event.message) {
-            console.log("Error Details: " + event.message);
-        }
-        isRecognitionActive = false;
-    };
+    
 
     ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -191,13 +223,18 @@ $(document).ready(function(){
     }
 
     const togglePause = () =>{
-        gamePaused = !gamePaused;
+        //gamePaused = !gamePaused;
         if (gamePaused) {
             console.log("Game Paused");
+            //no interval
+            clearInterval(gameInterval);
+            gameInterval=null;
+            document.getElementById("modalFala").style.display="flex";
         } else {
             console.log("Game Resumed");
             // Resume the game loop
-            initGame();
+            gameInterval=setInterval(initGame,125);
+            document.getElementById("modalFala").style.display="none";
         }
     }
 
@@ -205,6 +242,7 @@ $(document).ready(function(){
         let htmlMarkup = `<div class="food" style="grid-area: ${foodY} / ${foodX}"></div>`;
 
         if (snakeX === foodX && snakeY === foodY) {
+            gamePaused=true;
             changeFoodPosition();
             snakeBody.push([foodX, foodY]); // create more snake body
             // event.preventDefault(); // evita o reload
@@ -235,6 +273,6 @@ $(document).ready(function(){
     }
 
     changeFoodPosition();
-    setInterval(initGame, 125); // velocidade da cobra;
+    gameInterval=setInterval(initGame, 125); // velocidade da cobra;
     document.addEventListener("keydown", changeDirection);
 });
